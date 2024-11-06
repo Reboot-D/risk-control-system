@@ -1,0 +1,1933 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>风控模型分析系统 - 演示版</title>
+    <meta charset="UTF-8">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.2.2/echarts.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --danger-color: #ff4d4f;
+            --bg-color: #f0f2f5;
+            --dark-bg: #001529;
+            --text-color: #333;
+            --border-color: #e8e8e8;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 导航栏样式 */
+        .main-header {
+            background: var(--dark-bg);
+            color: white;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo i {
+            margin-right: 10px;
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav-menu li {
+            margin: 0 15px;
+        }
+
+        .nav-menu a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-menu a i {
+            margin-right: 5px;
+        }
+
+        .nav-menu a:hover {
+            color: white;
+        }
+
+        /* 主容器样式 */
+        .main-container {
+            margin-top: 60px;
+            padding: 20px;
+        }
+
+        /* 风险监控屏样式 */
+        .monitor-screen {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: white;
+        }
+
+        .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .monitor-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .monitor-time {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .monitor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            min-height: 500px;
+        }
+
+        .monitor-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1));
+        }
+
+        .monitor-value {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .monitor-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        .monitor-trend {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .trend-up {
+            color: #ff4d4f;
+            font-weight: 500;
+        }
+
+        .trend-down {
+            color: #52c41a;
+            font-weight: 500;
+        }
+
+        /* 风险分析区域样式 */
+        .analysis-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .analysis-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .analysis-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        /* 图表容器样式优化 */
+        .chart-container {
+            height: 400px;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        /* 添加新的大屏风格样式 */
+        .dashboard-screen {
+            background: linear-gradient(135deg, #1a1c20 0%, #0c2b4d 100%);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .screen-header {
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .screen-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .data-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .data-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1));
+            z-index: 1;
+        }
+
+        .data-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .data-label {
+            font-size: 14px;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .data-trend {
+            position: relative;
+            z-index: 2;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .chart-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            height: 400px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        /* 添加动画效果 */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .data-card:hover {
+            animation: pulse 1s infinite;
+        }
+
+        .interaction-container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+
+        .chat-window {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #userInput {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #sendButton {
+            padding: 8px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chart-container {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            height: 300px;
+            margin: 15px 0;
+        }
+
+        .monitor-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mini-stat {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .highlight {
+            color: #1890ff;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .monitor-stats {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .stat-item {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+
+        .text-danger {
+            color: var(--danger-color) !important;
+        }
+
+        .text-warning {
+            color: var(--warning-color) !important;
+        }
+
+        .text-success {
+            color: var(--success-color) !important;
+        }
+
+        /* 监控卡片样式优化 */
+        .monitor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .monitor-card .monitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .monitor-card .monitor-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .mini-stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+        }
+
+        .mini-stat .stat-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .mini-stat .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .mini-stat.warning .stat-value {
+            color: var(--warning-color);
+        }
+
+        .mini-stat.danger .stat-value {
+            color: var(--danger-color);
+        }
+
+        .mini-stat.success .stat-value {
+            color: var(--success-color);
+        }
+
+        .btn-outline-light {
+            color: #333;
+            border-color: #ddd;
+            background: white;
+        }
+
+        .btn-outline-light:hover {
+            color: #333;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+
+        .chart-container {
+            background: white;
+            height: 300px;
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* 图表标题样式优化 */
+        .chart-title {
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* 图例文字样式优化 */
+        .legend-text {
+            color: #333;
+        }
+
+        /* 坐标轴文字样式优化 */
+        .axis-label {
+            color: #333;
+        }
+
+        /* 数据标签样式优化 */
+        .data-label {
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* 监控卡片内文字样式 */
+        .monitor-card .monitor-title {
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .monitor-card .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .monitor-card .stat-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        /* 增加图表间距，避免重叠 */
+        .chart-row {
+            margin-bottom: 30px;
+        }
+
+        .chart-col {
+            padding: 15px;
+        }
+
+        /* 优化图表容器内边距 */
+        .chart-inner {
+            padding: 20px;
+        }
+
+        /* 针对风险类型分布的特殊样式 */
+        #riskTypeChart {
+            min-height: 450px;
+        }
+
+        /* 特别针对互动行为分析图的容器 */
+        #interactionChart {
+            height: 500px;
+            padding: 20px 60px;
+            margin: 20px 0;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .monitor-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 更新监控卡片内的字样式 */
+        .monitor-card .stat-label {
+            color: #333;
+            font-size: 14px;
+        }
+
+        .monitor-card .stat-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .mini-stat {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+        }
+
+        .mini-stat .stat-value {
+            color: #333;
+        }
+
+        .mini-stat .stat-label {
+            color: #666;
+        }
+
+        /* 按钮文字颜色 */
+        .btn-outline-light {
+            color: #333;
+            border-color: #ddd;
+            background: white;
+        }
+
+        .btn-outline-light:hover {
+            color: #333;
+            background-color: #f8f9fa;
+            border-color: #ddd;
+        }
+
+        /* 修改监控卡片的样式 */
+        .monitor-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .monitor-card .monitor-label {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .monitor-card .monitor-value {
+            color: #333;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .monitor-card .monitor-trend {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+
+        .monitor-card .trend-up {
+            color: #ff4d4f;
+        }
+
+        .monitor-card .trend-down {
+            color: #52c41a;
+        }
+
+        .monitor-card .fas {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="main-header">
+        <a href="#" class="logo">
+            <i class="fas fa-shield-alt"></i>
+            风控模型分析系统
+        </a>
+        <ul class="nav-menu">
+            <li><a href="#"><i class="fas fa-chart-line"></i>风险监控</a></li>
+            <li><a href="#"><i class="fas fa-user-shield"></i>用户分析</a></li>
+            <li><a href="#"><i class="fas fa-tasks"></i>风险处理</a></li>
+            <li><a href="#"><i class="fas fa-cog"></i>系统设置</a></li>
+        </ul>
+    </header>
+
+    <!-- 主容器 -->
+    <div class="main-container">
+        <!-- 风险监控大屏 -->
+        <div class="monitor-screen">
+            <div class="monitor-header">
+                <div class="monitor-title">
+                    <i class="fas fa-desktop"></i>
+                    实时风险监控
+                </div>
+                <div class="monitor-time">
+                    最后更新时间：<span id="lastUpdateTime">2024-03-14 15:30:45</span>
+                </div>
+            </div>
+            
+            <div class="monitor-grid">
+                <!-- 用户风险分布卡片 -->
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-user-shield"></i>
+                            用户风险分布
+                        </div>
+                    </div>
+                    <div id="userRiskDistChart" style="height: 200px;"></div>
+                    <div class="monitor-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">高风险用户数</div>
+                            <div class="stat-value text-danger">1,234</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">中风险用户数</div>
+                            <div class="stat-value text-warning">3,567</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">低风险用户数</div>
+                            <div class="stat-value text-success">5,789</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险预警趋势卡片 -->
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-chart-line"></i>
+                            风险预警趋势
+                        </div>
+                    </div>
+                    <div id="riskAlertTrendChart" style="height: 200px;"></div>
+                    <div class="monitor-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">今日预警总数</div>
+                            <div class="stat-value">3,567</div>
+                            <div class="monitor-trend trend-up">
+                                <i class="fas fa-arrow-up"></i>
+                                较昨日 +5.2%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 待处理预警分类卡片 -->
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-tasks"></i>
+                            待处理预警分类
+                        </div>
+                    </div>
+                    <div id="pendingAlertChart" style="height: 200px;"></div>
+                    <div class="monitor-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">待处理总数</div>
+                            <div class="stat-value">89</div>
+                            <div class="monitor-trend trend-down">
+                                <i class="fas fa-arrow-down"></i>
+                                较昨日 -12.3%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 风险处理效率卡片 -->
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            风险处理效率
+                        </div>
+                    </div>
+                    <div id="riskProcessChart" style="height: 200px;"></div>
+                    <div class="monitor-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">平均处理时长</div>
+                            <div class="stat-value">5.2h</div>
+                            <div class="monitor-trend trend-up">
+                                <i class="fas fa-arrow-up"></i>
+                                效率提升 +2.1%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 实时风险趋势图 -->
+            <div id="realTimeRiskChart" style="height: 300px;"></div>
+        </div>
+
+        <!-- 风险分析详情区域 -->
+        <div class="analysis-section">
+            <!-- 筛选器 -->
+            <div class="filter-container">
+                <div class="row align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">时间范围</label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" id="startDate">
+                            <span class="input-group-text">至</span>
+                            <input type="date" class="form-control" id="endDate">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">风险等级</label>
+                        <select class="form-select" id="riskLevel">
+                            <option value="all">全部</option>
+                            <option value="high">高风险</option>
+                            <option value="medium">中风险</option>
+                            <option value="low">低风险</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">风险类型</label>
+                        <select class="form-select" id="riskType">
+                            <option value="all">全部类型</option>
+                            <option value="identity">身份风险</option>
+                            <option value="behavior">行为风险</option>
+                            <option value="transaction">交易风险</option>
+                            <option value="device">设备风险</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">用户ID/手机号</label>
+                        <input type="text" class="form-control" id="userIdentifier" placeholder="请输入户ID或手机号">
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-primary w-100" onclick="searchRiskData()">
+                            <i class="fas fa-search"></i> 查询
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 风险分布概览 -->
+            <div class="row mt-4">
+                <div class="col-md-8">
+                    <div class="analysis-container">
+                        <div class="analysis-header">
+                            <div class="analysis-title">
+                                <i class="fas fa-chart-pie"></i>
+                                风险分布分析
+                            </div>
+                            <div class="analysis-actions">
+                                <button class="btn btn-outline-primary btn-sm" onclick="exportRiskData()">
+                                    <i class="fas fa-download"></i> 导出
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div id="riskTypeChart" class="chart-container"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div id="riskTrendChart" class="chart-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="analysis-container">
+                        <div class="analysis-header">
+                            <div class="analysis-title">
+                                <i class="fas fa-map-marked-alt"></i>
+                                地域分布
+                            </div>
+                        </div>
+                        <div id="geoRiskMap" class="chart-container"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 风险详情列表 -->
+            <div class="analysis-container mt-4">
+                <div class="analysis-header">
+                    <div class="analysis-title">
+                        <i class="fas fa-list"></i>
+                        风险预警详情
+                    </div>
+                    <div class="analysis-actions">
+                        <button class="btn btn-outline-primary btn-sm" onclick="batchProcess()">
+                            <i class="fas fa-tasks"></i> 批量处理
+                        </button>
+                        <button class="btn btn-outline-success btn-sm" onclick="exportList()">
+                            <i class="fas fa-file-excel"></i> 导出列表
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>用户ID</th>
+                                <th>风险等级</th>
+                                <th>风险类型</th>
+                                <th>风险描述</th>
+                                <th>触发时间</th>
+                                <th>处理状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="riskDetailTable">
+                            <!-- 数据将通过JS动态填充 -->
+                        </tbody>
+                    </table>
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="text-muted">
+                            共 <span id="totalCount">0</span> 条记录
+                        </div>
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination" id="pagination">
+                                <!-- 分页将通过JS动态生成 -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户画像分析模态框 -->
+        <div class="modal fade" id="userProfileModal" tabindex="-1">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">户画像分析</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- 基本信息 -->
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">基本信息</h6>
+                                        <div id="basicInfo">
+                                            <!-- 基本信息将通过JS动态填充 -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 行为特征 -->
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">行为特征分析</h6>
+                                        <div id="behaviorChart" style="height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-3">
+                            <!-- 风险指标 -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">风险指标估</h6>
+                                        <div id="riskIndicatorChart" style="height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 历史记录 -->
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title">历史风险记录</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>时间</th>
+                                                        <th>风险类型</th>
+                                                        <th>风险等级</th>
+                                                        <th>状态</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="historyTable">
+                                                    <!-- 历史记录将通过JS动填 -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 在 monitor-grid 后添加直播风控模块 -->
+        <div class="row mt-4">
+            <!-- 直播间实时监控 -->
+            <div class="col-md-6">
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-video"></i>
+                            直播间实时监控
+                        </div>
+                        <div class="monitor-actions">
+                            <button class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-sync"></i> 刷新
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mini-stat">
+                                <div class="stat-value">12,345</div>
+                                <div class="stat-label">当前直播间数</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mini-stat warning">
+                                <div class="stat-value">23</div>
+                                <div class="stat-label">异常直播间</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="liveRoomMonitor" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- 礼物流水监控 -->
+            <div class="col-md-6">
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-gift"></i>
+                            礼物流水监控
+                        </div>
+                        <div class="monitor-actions">
+                            <button class="btn btn-outline-light btn-sm">
+                                <i class="fas fa-download"></i> 导出
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mini-stat success">
+                                <div class="stat-value">¥1,234,567</div>
+                                <div class="stat-label">今日礼物流</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mini-stat danger">
+                                <div class="stat-value">31</div>
+                                <div class="stat-label">异常交易数</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="giftFlowMonitor" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 添加用户行为分析模块 -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-user-clock"></i>
+                            用户活跃度分析
+                        </div>
+                    </div>
+                    <div id="userActivityChart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-comments"></i>
+                            互动行为分析
+                        </div>
+                    </div>
+                    <div id="interactionChart" class="chart-container"></div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="monitor-card">
+                    <div class="monitor-header">
+                        <div class="monitor-title">
+                            <i class="fas fa-route"></i>
+                            用户行为轨迹
+                        </div>
+                    </div>
+                    <div id="behaviorPathChart" class="chart-container"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatWindow = document.getElementById('chatWindow');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+
+            function sendMessage() {
+                const message = userInput.value.trim();
+                if (message) {
+                    // 显示用户消息
+                    appendMessage('user', message);
+                    
+                    // 发送到后端
+                    fetch('/process_message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({message: message})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        appendMessage('system', data.response);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+
+                    userInput.value = '';
+                }
+            }
+
+            function appendMessage(sender, message) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                messageDiv.textContent = message;
+                chatWindow.appendChild(messageDiv);
+                chatWindow.scrollTop = chatWindow.scrollHeight;
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        // 初始化所有图表
+        function initCharts() {
+            initUserRiskDistChart();
+            initRiskAlertTrendChart();
+            initPendingAlertChart();
+            initRiskProcessChart();
+            initRealTimeRiskChart();
+            initRiskTypeChart();
+            initRiskTrendChart();
+            initGeoRiskMap();
+            initLiveRoomMonitor();
+            initGiftFlowMonitor();
+            initUserActivityChart();
+            initInteractionChart();
+            initBehaviorPathChart();
+        }
+
+        // 用户风险分布图表
+        function initUserRiskDistChart() {
+            const chart = echarts.init(document.getElementById('userRiskDistChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: 0,
+                    data: ['低风险', '中风险', '高风险']
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: true,
+                    label: {
+                        show: true,
+                        formatter: '{b}\n{d}%'
+                    },
+                    data: [
+                        {value: 5789, name: '低风险', itemStyle: {color: '#52c41a'}},
+                        {value: 3567, name: '中风险', itemStyle: {color: '#faad14'}},
+                        {value: 1234, name: '高风险', itemStyle: {color: '#ff4d4f'}}
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 风险预警趋势图表
+        function initRiskAlertTrendChart() {
+            const chart = echarts.init(document.getElementById('riskAlertTrendChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [{
+                    data: [820, 932, 901, 934, 1290, 1330, 1320],
+                    type: 'line',
+                    smooth: true,
+                    areaStyle: {}
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 待处理预警分类图表
+        function initPendingAlertChart() {
+            const chart = echarts.init(document.getElementById('pendingAlertChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                xAxis: {
+                    type: 'value'
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['低风险', '中风险', '高风险']
+                },
+                series: [{
+                    type: 'bar',
+                    data: [
+                        {value: 22, itemStyle: {color: '#52c41a'}},
+                        {value: 31, itemStyle: {color: '#faad14'}},
+                        {value: 36, itemStyle: {color: '#ff4d4f'}}
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 风险处理效率图表
+        function initRiskProcessChart() {
+            const chart = echarts.init(document.getElementById('riskProcessChart'));
+            const option = {
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['处理时长', '处理率']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '小时',
+                        min: 0,
+                        max: 10
+                    },
+                    {
+                        type: 'value',
+                        name: '处理率',
+                        min: 0,
+                        max: 100,
+                        axisLabel: {
+                            formatter: '{value}%'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '处理时长',
+                        type: 'bar',
+                        data: [5.2, 4.8, 5.0, 4.5, 4.9, 5.1, 4.7]
+                    },
+                    {
+                        name: '处理率',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: [92, 94, 91, 95, 93, 90, 96]
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 实时风险趋势图
+        function initRealTimeRiskChart() {
+            const chart = echarts.init(document.getElementById('realTimeRiskChart'));
+            const option = {
+                backgroundColor: 'white',
+                title: {
+                    text: '实时风险趋势',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['高风险', '中风险', '低风险'],
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    data: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    axisLabel: {
+                        color: '#333'
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#333'
+                    }
+                },
+                series: [
+                    {
+                        name: '高风险',
+                        type: 'line',
+                        data: Array.from({length: 24}, () => Math.floor(Math.random() * 100)),
+                        itemStyle: {
+                            color: '#ff4d4f'
+                        }
+                    },
+                    {
+                        name: '中风险',
+                        type: 'line',
+                        data: Array.from({length: 24}, () => Math.floor(Math.random() * 200)),
+                        itemStyle: {
+                            color: '#faad14'
+                        }
+                    },
+                    {
+                        name: '低风险',
+                        type: 'line',
+                        data: Array.from({length: 24}, () => Math.floor(Math.random() * 300)),
+                        itemStyle: {
+                            color: '#52c41a'
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 风险类型分布图
+        function initRiskTypeChart() {
+            const chart = echarts.init(document.getElementById('riskTypeChart'));
+            const option = {
+                title: {
+                    text: '风险类型分布',
+                    left: 'center',
+                    top: '3%'
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: '5%',
+                    left: 'center',
+                    itemWidth: 25,
+                    itemHeight: 14,
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                series: [
+                    {
+                        name: '风险分布',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '50%'],
+                        avoidLabelOverlap: true,
+                        itemStyle: {
+                            borderRadius: 10,
+                            borderColor: '#fff',
+                            borderWidth: 2
+                        },
+                        label: {
+                            show: true,
+                            position: 'outside',
+                            formatter: '{b}\n{d}%'
+                        },
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: '16',
+                                fontWeight: 'bold'
+                            }
+                        },
+                        data: [
+                            {
+                                value: 1048,
+                                name: '身份风险',
+                                itemStyle: { color: '#FF6B6B' }
+                            },
+                            {
+                                value: 735,
+                                name: '行为风险',
+                                itemStyle: { color: '#4ECDC4' }
+                            },
+                            {
+                                value: 580,
+                                name: '交易风险',
+                                itemStyle: { color: '#45B7D1' }
+                            },
+                            {
+                                value: 484,
+                                name: '设备风险',
+                                itemStyle: { color: '#96CEB4' }
+                            }
+                        ]
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 风险趋势图
+        function initRiskTrendChart() {
+            const chart = echarts.init(document.getElementById('riskTrendChart'));
+            const option = {
+                title: {
+                    text: '风险势分析'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['风险事件数', '处理率']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: [
+                    {
+                        type: 'value',
+                        name: '件数',
+                        min: 0,
+                        max: 1000
+                    },
+                    {
+                        type: 'value',
+                        name: '处理率',
+                        min: 0,
+                        max: 100,
+                        axisLabel: {
+                            formatter: '{value}%'
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '风险事件数',
+                        type: 'bar',
+                        data: Array.from({length: 7}, () => Math.floor(Math.random() * 1000))
+                    },
+                    {
+                        name: '处理率',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        data: Array.from({length: 7}, () => Math.floor(Math.random() * 100))
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 地理风险分布图
+        function initGeoRiskMap() {
+            const chart = echarts.init(document.getElementById('geoRiskMap'));
+            
+            // 加载中国地图数据
+            $.get('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json', function(chinaJson) {
+                echarts.registerMap('china', chinaJson);
+                
+                const option = {
+                    title: {
+                        text: '全国风险分布',
+                        textStyle: {
+                            color: '#fff'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}: {c} (风险事件)'
+                    },
+                    visualMap: {
+                        min: 0,
+                        max: 1000,
+                        text: ['高', '低'],
+                        realtime: false,
+                        calculable: true,
+                        inRange: {
+                            color: ['#313695', '#4575b4', '#74add1', '#abd9e9']
+                        },
+                        textStyle: {
+                            color: '#fff'
+                        }
+                    },
+                    series: [
+                        {
+                            name: '风险分布',
+                            type: 'map',
+                            map: 'china',
+                            emphasis: {
+                                label: {
+                                    show: true
+                                }
+                            },
+                            data: [
+                                {name: '北京', value: 876},
+                                {name: '上海', value: 756},
+                                {name: '广东', value: 654},
+                                {name: '浙江', value: 543},
+                                {name: '江苏', value: 432},
+                                // ... 可以添加更多省份数据
+                            ]
+                        }
+                    ]
+                };
+                chart.setOption(option);
+            });
+        }
+
+        // 用户活跃度分析图
+        function initUserActivityChart() {
+            const chart = echarts.init(document.getElementById('userActivityChart'));
+            const option = {
+                title: {
+                    text: '用户活跃度分析',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                radar: {
+                    indicator: [
+                        { name: '登录频率', max: 100 },
+                        { name: '交量', max: 100 },
+                        { name: '互动数', max: 100 },
+                        { name: '在线时长', max: 100 },
+                        { name: '行为分数', max: 100 }
+                    ],
+                    axisLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.3)'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    },
+                    name: {
+                        textStyle: {
+                            color: '#333'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        type: 'radar',
+                        data: [
+                            {
+                                value: [80, 90, 70, 85, 75],
+                                name: '用户活跃度',
+                                areaStyle: {
+                                    color: 'rgba(24, 144, 255, 0.6)'
+                                },
+                                label: {
+                                    color: '#333'
+                                }
+                            }
+                        ]
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 互动行为分析图
+        function initInteractionChart() {
+            const chart = echarts.init(document.getElementById('interactionChart'));
+            const option = {
+                title: {
+                    text: '互动行为分析',
+                    textStyle: {
+                        color: '#333'
+                    },
+                    left: 'center',
+                    top: 10
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: 10,
+                    left: 'center',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                series: [
+                    {
+                        name: '互动类型',
+                        type: 'pie',
+                        radius: ['40%', '70%'],
+                        center: ['50%', '50%'],
+                        avoidLabelOverlap: true,
+                        label: {
+                            show: true,
+                            position: 'outside',
+                            formatter: function(params) {
+                                return `${params.name}\n${params.value} (${params.percent}%)`;
+                            },
+                            color: '#333',
+                            fontSize: 12,
+                            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                            padding: [4, 8],
+                            borderRadius: 4,
+                            distanceToLabelLine: 5
+                        },
+                        labelLine: {
+                            show: true,
+                            length: 20,
+                            length2: 10,
+                            smooth: true,
+                            lineStyle: {
+                                color: '#666'
+                            }
+                        },
+                        data: [
+                            { 
+                                value: 1048, 
+                                name: '评论',
+                                itemStyle: { color: '#FF6B6B' }
+                            },
+                            { 
+                                value: 735, 
+                                name: '点赞',
+                                itemStyle: { color: '#4ECDC4' }
+                            },
+                            { 
+                                value: 580, 
+                                name: '分享',
+                                itemStyle: { color: '#45B7D1' }
+                            },
+                            { 
+                                value: 484, 
+                                name: '礼物',
+                                itemStyle: { color: '#96CEB4' }
+                            },
+                            { 
+                                value: 300, 
+                                name: '关注',
+                                itemStyle: { color: '#7FDBDA' }
+                            }
+                        ],
+                        emphasis: {
+                            label: {
+                                show: true,
+                                fontSize: 14,
+                                fontWeight: 'bold'
+                            }
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 用户行为轨迹图
+        function initBehaviorPathChart() {
+            const chart = echarts.init(document.getElementById('behaviorPathChart'));
+            const option = {
+                title: {
+                    text: '用户行为轨迹',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: ['正常行为', '异常行为'],
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                grid: {
+                    left: '3%',
+                    right: '4%',
+                    bottom: '3%',
+                    containLabel: true
+                },
+                xAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#333'
+                    }
+                },
+                yAxis: {
+                    type: 'category',
+                    data: ['登录', '浏览', '下单', '支付', '评价'],
+                    axisLabel: {
+                        color: '#333'
+                    }
+                },
+                series: [
+                    {
+                        name: '正常行为',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true,
+                            color: '#333'
+                        },
+                        data: [320, 302, 301, 334, 390]
+                    },
+                    {
+                        name: '异常行为',
+                        type: 'bar',
+                        stack: 'total',
+                        label: {
+                            show: true,
+                            color: '#333'
+                        },
+                        data: [120, 132, 101, 134, 90]
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 直播间监控图表
+        function initLiveRoomMonitor() {
+            const chart = echarts.init(document.getElementById('liveRoomMonitor'));
+            const option = {
+                title: {
+                    text: '直播间实时数据',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: Array.from({length: 12}, (_, i) => `${i*2}:00`),
+                    axisLabel: {
+                        color: '#333'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#333'
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#333'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#333'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#eee'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '在线直播间',
+                        type: 'bar',
+                        data: Array.from({length: 12}, () => Math.floor(Math.random() * 1000)),
+                        itemStyle: {
+                            color: '#1890ff'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            color: '#333'
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 礼物流水监控图表
+        function initGiftFlowMonitor() {
+            const chart = echarts.init(document.getElementById('giftFlowMonitor'));
+            const option = {
+                title: {
+                    text: '礼物流水趋势',
+                    textStyle: {
+                        color: '#333'
+                    }
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                xAxis: {
+                    type: 'category',
+                    data: Array.from({length: 12}, (_, i) => `${i*2}:00`),
+                    axisLabel: {
+                        color: '#333'
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#333'
+                        }
+                    }
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        color: '#333',
+                        formatter: (value) => `￥${value}`
+                    },
+                    axisLine: {
+                        lineStyle: {
+                            color: '#333'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: '#eee'
+                        }
+                    }
+                },
+                series: [
+                    {
+                        name: '礼物流水',
+                        type: 'line',
+                        smooth: true,
+                        data: Array.from({length: 12}, () => Math.floor(Math.random() * 100000)),
+                        itemStyle: {
+                            color: '#52c41a'
+                        },
+                        label: {
+                            show: true,
+                            position: 'top',
+                            color: '#333'
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                {
+                                    offset: 0,
+                                    color: 'rgba(82, 196, 26, 0.5)'
+                                },
+                                {
+                                    offset: 1,
+                                    color: 'rgba(82, 196, 26, 0.1)'
+                                }
+                            ])
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 在页面加载完成后初始化所有图表
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            
+            // 监听窗口大小变化，重绘图表
+            window.addEventListener('resize', function() {
+                const charts = document.querySelectorAll('[id$="Chart"]');
+                charts.forEach(chartDom => {
+                    const chart = echarts.getInstanceByDom(chartDom);
+                    if (chart) {
+                        chart.resize();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

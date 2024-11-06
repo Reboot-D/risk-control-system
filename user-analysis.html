@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>风控模型分析系统 - 用户分析</title>
+    <meta charset="UTF-8">
+    <link href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/5.0.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.2.2/echarts.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <style>
+        /* 继承基础样式 */
+        :root {
+            --primary-color: #1890ff;
+            --success-color: #52c41a;
+            --warning-color: #faad14;
+            --danger-color: #ff4d4f;
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+        }
+
+        .analysis-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .analysis-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-title i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .chart-container {
+            height: 350px;
+            margin: 15px 0;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .risk-high {
+            color: var(--danger-color);
+        }
+
+        .risk-medium {
+            color: var(--warning-color);
+        }
+
+        .risk-low {
+            color: var(--success-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="main-header">
+        <!-- 保持与主页相同的导航栏 -->
+    </header>
+
+    <div class="main-container">
+        <!-- 筛选条件区域 -->
+        <div class="analysis-header">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">时间范围</label>
+                    <div class="input-group">
+                        <input type="date" class="form-control" id="startDate">
+                        <span class="input-group-text">至</span>
+                        <input type="date" class="form-control" id="endDate">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">风险等级</label>
+                    <select class="form-select" id="riskLevel">
+                        <option value="all">全部</option>
+                        <option value="high">高风险</option>
+                        <option value="medium">中风险</option>
+                        <option value="low">低风险</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">认证状态</label>
+                    <select class="form-select" id="authStatus">
+                        <option value="all">全部</option>
+                        <option value="verified">已认证</option>
+                        <option value="unverified">未认证</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">用户ID/手机号</label>
+                    <input type="text" class="form-control" id="userIdentifier" placeholder="请输入用户ID或手机号">
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary w-100" onclick="searchUsers()">
+                        <i class="fas fa-search"></i> 查询
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户分析内容区域 -->
+        <div class="row">
+            <!-- 用户基本信息卡片 -->
+            <div class="col-md-12 mb-4">
+                <div class="analysis-card">
+                    <div class="card-title">
+                        <i class="fas fa-user-shield"></i>
+                        用户基本信息
+                    </div>
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <div class="info-label">用户ID</div>
+                                <div class="info-value">12345678</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">注册时间</div>
+                                <div class="info-value">2023-12-01</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <div class="info-label">实名认证</div>
+                                <div class="info-value"><span class="badge bg-success">已认证</span></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">最近登录</div>
+                                <div class="info-value">2024-03-14 15:30:45</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <div class="info-label">绑定设备数</div>
+                                <div class="info-value">3 台</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">绑定第三方账号</div>
+                                <div class="info-value">2 个</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-item">
+                                <div class="info-label">当前风险等级</div>
+                                <div class="info-value risk-high">高风险</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">账户状态</div>
+                                <div class="info-value">正常</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账户及设备一致性分析 -->
+            <div class="col-md-6">
+                <div class="analysis-card">
+                    <div class="card-title">
+                        <i class="fas fa-mobile-alt"></i>
+                        账户及设备一致性分析
+                    </div>
+                    <div id="deviceLocationMap" class="chart-container"></div>
+                    <div id="deviceLoginChart" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- 行为模式与偏好分析 -->
+            <div class="col-md-6">
+                <div class="analysis-card">
+                    <div class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        行为模式与偏好分析
+                    </div>
+                    <div id="behaviorPatternChart" class="chart-container"></div>
+                    <div id="interactionChart" class="chart-container"></div>
+                </div>
+            </div>
+
+            <!-- 资金流动与风险预警 -->
+            <div class="col-md-12">
+                <div class="analysis-card">
+                    <div class="card-title">
+                        <i class="fas fa-money-bill-wave"></i>
+                        资金流动与风险预警
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div id="transactionFlowChart" class="chart-container"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div id="giftDistributionChart" class="chart-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户画像模态框 -->
+    <div class="modal fade" id="userProfileModal" tabindex="-1">
+        <!-- 模态框��容 -->
+    </div>
+
+    <script>
+        // 初始化所有图表
+        function initCharts() {
+            initDeviceLocationMap();
+            initDeviceLoginChart();
+            initBehaviorPatternChart();
+            initInteractionChart();
+            initTransactionFlowChart();
+            initGiftDistributionChart();
+        }
+
+        // 设备地理位置分布图
+        function initDeviceLocationMap() {
+            const chart = echarts.init(document.getElementById('deviceLocationMap'));
+            $.get('https://geo.datav.aliyun.com/areas_v3/bound/100000_full.json', function(chinaJson) {
+                echarts.registerMap('china', chinaJson);
+                const option = {
+                    title: {
+                        text: '登录地理位置分布',
+                        left: 'center'
+                    },
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: '{b}: {c}次登录'
+                    },
+                    visualMap: {
+                        min: 0,
+                        max: 200,
+                        left: 'left',
+                        top: 'bottom',
+                        text: ['高', '低'],
+                        inRange: {
+                            color: ['#e0ffff', '#006edd']
+                        },
+                        calculable: true
+                    },
+                    series: [{
+                        name: '登录次数',
+                        type: 'map',
+                        map: 'china',
+                        emphasis: {
+                            label: {
+                                show: true
+                            }
+                        },
+                        data: [
+                            {name: '北京', value: 189},
+                            {name: '上海', value: 156},
+                            {name: '广东', value: 145},
+                            {name: '浙江', value: 123},
+                            {name: '江苏', value: 98},
+                            {name: '四川', value: 76},
+                            {name: '湖北', value: 65}
+                        ]
+                    }]
+                };
+                chart.setOption(option);
+            });
+        }
+
+        // 设备登录趋势图
+        function initDeviceLoginChart() {
+            const chart = echarts.init(document.getElementById('deviceLoginChart'));
+            const option = {
+                title: {
+                    text: '设备登录趋势'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['PC端', '移动端', 'Pad端']
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                },
+                yAxis: {
+                    type: 'value'
+                },
+                series: [
+                    {
+                        name: 'PC端',
+                        type: 'line',
+                        data: [120, 132, 101, 134, 90, 230, 210]
+                    },
+                    {
+                        name: '移动端',
+                        type: 'line',
+                        data: [220, 182, 191, 234, 290, 330, 310]
+                    },
+                    {
+                        name: 'Pad端',
+                        type: 'line',
+                        data: [150, 232, 201, 154, 190, 330, 410]
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 行为模式分析图
+        function initBehaviorPatternChart() {
+            const chart = echarts.init(document.getElementById('behaviorPatternChart'));
+            const option = {
+                title: {
+                    text: '用户行为特征分析',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                radar: {
+                    indicator: [
+                        { name: '直播观看时长', max: 100 },
+                        { name: '互动频率', max: 100 },
+                        { name: '消费能力', max: 100 },
+                        { name: '登录频率', max: 100 },
+                        { name: '社交活跃度', max: 100 }
+                    ],
+                    center: ['50%', '55%'],
+                    radius: '65%'
+                },
+                series: [{
+                    type: 'radar',
+                    data: [{
+                        value: [85, 92, 78, 95, 88],
+                        name: '用户画像',
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(24,144,255,0.5)' },
+                                { offset: 1, color: 'rgba(24,144,255,0.1)' }
+                            ])
+                        },
+                        lineStyle: {
+                            color: '#1890ff'
+                        }
+                    }]
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 互动行为分析图
+        function initInteractionChart() {
+            const chart = echarts.init(document.getElementById('interactionChart'));
+            const option = {
+                title: {
+                    text: '互动行为分布',
+                    left: 'center',
+                    top: 10
+                },
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                },
+                legend: {
+                    orient: 'horizontal',
+                    bottom: 10,
+                    left: 'center',
+                    itemWidth: 25,
+                    itemHeight: 14
+                },
+                series: [{
+                    name: '互动类型',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    center: ['50%', '50%'],
+                    avoidLabelOverlap: true,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        position: 'outside',
+                        formatter: '{b}\n{c} ({d}%)',
+                        color: '#333',
+                        fontSize: 12,
+                        lineHeight: 18,
+                        rich: {
+                            b: {
+                                fontSize: 14,
+                                lineHeight: 20
+                            }
+                        }
+                    },
+                    labelLine: {
+                        show: true,
+                        length: 15,
+                        length2: 10,
+                        smooth: true
+                    },
+                    data: [
+                        { 
+                            value: 1048, 
+                            name: '评论',
+                            itemStyle: { color: '#6B8FF6' }
+                        },
+                        { 
+                            value: 735, 
+                            name: '点赞',
+                            itemStyle: { color: '#9FD4A5' }
+                        },
+                        { 
+                            value: 580, 
+                            name: '分享',
+                            itemStyle: { color: '#F6D589' }
+                        },
+                        { 
+                            value: 484, 
+                            name: '礼物',
+                            itemStyle: { color: '#F69191' }
+                        }
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 资金流动趋势图
+        function initTransactionFlowChart() {
+            const chart = echarts.init(document.getElementById('transactionFlowChart'));
+            const option = {
+                title: {
+                    text: '充值消费趋势分析',
+                    left: 'center'
+                },
+                tooltip: {
+                    trigger: 'axis',
+                    formatter: function(params) {
+                        let result = params[0].axisValue + '<br/>';
+                        params.forEach(param => {
+                            result += param.seriesName + ': ￥' + param.value + '<br/>';
+                        });
+                        return result;
+                    }
+                },
+                legend: {
+                    data: ['充值金额', '消费金额'],
+                    bottom: 0
+                },
+                xAxis: {
+                    type: 'category',
+                    data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月']
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: '￥{value}'
+                    }
+                },
+                series: [
+                    {
+                        name: '充值金额',
+                        type: 'line',
+                        smooth: true,
+                        data: [3000, 4500, 3800, 5200, 4200, 5800, 4300],
+                        itemStyle: {
+                            color: '#1890ff'
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(24,144,255,0.3)' },
+                                { offset: 1, color: 'rgba(24,144,255,0.1)' }
+                            ])
+                        }
+                    },
+                    {
+                        name: '消费金额',
+                        type: 'line',
+                        smooth: true,
+                        data: [2800, 4200, 3600, 4800, 3900, 5500, 4100],
+                        itemStyle: {
+                            color: '#52c41a'
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(82,196,26,0.3)' },
+                                { offset: 1, color: 'rgba(82,196,26,0.1)' }
+                            ])
+                        }
+                    }
+                ]
+            };
+            chart.setOption(option);
+        }
+
+        // 礼物分布图
+        function initGiftDistributionChart() {
+            const chart = echarts.init(document.getElementById('giftDistributionChart'));
+            const option = {
+                title: {
+                    text: '礼物赠送分布'
+                },
+                tooltip: {
+                    trigger: 'item'
+                },
+                series: [{
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: true,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: true,
+                        formatter: '{b}: {c}元'
+                    },
+                    data: [
+                        {value: 1048, name: '主播A'},
+                        {value: 735, name: '主播B'},
+                        {value: 580, name: '主播C'},
+                        {value: 484, name: '主播D'}
+                    ]
+                }]
+            };
+            chart.setOption(option);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initCharts();
+            
+            // 监听窗口大小变化，重绘图表
+            window.addEventListener('resize', function() {
+                const charts = document.querySelectorAll('.chart-container');
+                charts.forEach(chartDom => {
+                    const chart = echarts.getInstanceByDom(chartDom);
+                    if (chart) {
+                        chart.resize();
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 
